@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0A0B0A" />
+<title>沈文轩 · 数据支持 / 流程自动化</title>
+<style>
+/* ============================================================
+   BOLD VARIANT —— 深色编辑风 · 电光强调 · 超大字号 · 数据看板
+   设计公式：暗场底 + 荧光强调 + 巨型 Display + 巨大数字 + 跑马灯
+   ============================================================ */
+:root{
+  /* 色彩（深色，锁定） */
+  --bg:#0A0B0A;
+  --bg-2:#111310;
+  --surface:#15171400;
+  --surface-l:#171A15;
+  --ink:#F4F5F1;
+  --ink-2:#A7ADA1;
+  --ink-3:#6B7065;
+  --line:#262A23;
+  --accent:#C9F24D;          /* 电光青柠 */
+  --accent-ink:#0A0B0A;      /* 强调色上的文字 */
+  --accent-soft:rgba(201,242,77,.12);
+
+  --font-sans:"PingFang SC","HarmonyOS Sans SC","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  --font-latin:"Inter","SF Pro Display",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+
+  --radius-sm:10px; --radius-md:14px; --radius-lg:20px;
+  --container:1200px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-sans);font-size:1.0625rem;line-height:1.7;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+h1,h2,h3,p,ul,figure{margin:0;}
+ul{padding:0;list-style:none;}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+.num,.eyebrow,.btn,.idx{font-family:var(--font-latin);}
+.num{font-variant-numeric:tabular-nums;}
+/* 图标（内联 SVG，Lucide 线性风，零依赖） */
+.ico{width:1.05em;height:1.05em;flex:0 0 auto;display:inline-block;vertical-align:-.14em;}
+.ico-acc{color:var(--accent);}
+.tl-honor .ico{margin-right:.45em;}
+
+/* ---------- 排版：更大、更重 ---------- */
+.display{font-size:clamp(3.5rem,2rem + 13vw,9.5rem);line-height:.92;letter-spacing:-.04em;font-weight:700;}
+.display .hl{color:var(--accent);}
+h1{font-size:clamp(2.25rem,1.5rem + 4vw,3.75rem);line-height:1.05;letter-spacing:-.03em;font-weight:700;}
+h2{font-size:clamp(1.75rem,1.2rem + 2.6vw,2.75rem);line-height:1.1;letter-spacing:-.02em;font-weight:600;}
+h3{font-size:1.25rem;line-height:1.3;font-weight:600;}
+.eyebrow{font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;}
+.muted{color:var(--ink-2);}
+.small{font-size:.9375rem;}
+.caption{font-size:.75rem;color:var(--ink-3);}
+
+/* ---------- 容器与区块 ---------- */
+.container{width:100%;max-width:var(--container);margin-inline:auto;padding-inline:20px;}
+.section{padding-block:72px;position:relative;}
+.section-head{display:flex;align-items:center;gap:16px;margin-bottom:36px;}
+.section-head .idx{color:var(--accent);font-weight:700;font-size:.875rem;padding:3px 10px;border:1px solid var(--line);border-radius:999px;}
+.section-head::after{content:"";flex:1;height:1px;background:var(--line);}
+@media(min-width:768px){ .container{padding-inline:32px;} .section{padding-block:104px;} }
+@media(min-width:1024px){ .container{padding-inline:48px;} .section{padding-block:128px;} }
+
+/* ---------- Header ---------- */
+.header{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line);}
+.header .container{display:flex;align-items:center;justify-content:space-between;height:60px;}
+.brand{font-weight:700;letter-spacing:-.02em;}
+.brand .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;box-shadow:0 0 12px var(--accent);}
+.nav{display:none;gap:30px;font-size:.9375rem;}
+.nav a{color:var(--ink-2);transition:color .15s var(--ease);position:relative;}
+.nav a:hover{color:var(--ink);}
+.header-actions{display:flex;align-items:center;gap:10px;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;font-size:.9375rem;font-weight:600;cursor:pointer;border:1px solid transparent;transition:transform .15s var(--ease),background .15s,color .15s;}
+.btn-primary{background:var(--accent);color:var(--accent-ink);}
+.btn-primary:hover{transform:translateY(-2px);}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.header .btn-primary{display:none;}
+.icon-btn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer;font-size:16px;}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+@media(min-width:1024px){ .header .container{height:72px;} .nav{display:flex;} .header .btn-primary{display:inline-flex;} .burger{display:none;} }
+.mobile-menu{display:none;border-top:1px solid var(--line);background:var(--bg-2);}
+.mobile-menu.open{display:block;}
+.mobile-menu a{display:block;padding:16px 20px;border-bottom:1px solid var(--line);color:var(--ink-2);}
+.mobile-menu a:last-child{border-bottom:none;}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;padding-block:56px 40px;overflow:hidden;}
+.hero::before{content:"";position:absolute;top:-30%;right:-20%;width:70vw;height:70vw;max-width:900px;max-height:900px;border-radius:50%;background:radial-gradient(circle,var(--accent-soft) 0%,transparent 62%);pointer-events:none;}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(80% 60% at 70% 20%,#000,transparent);}
+.hero .container{position:relative;z-index:1;}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);font-size:.8125rem;color:var(--ink-2);margin-bottom:22px;}
+.badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(201,242,77,.5);}70%{box-shadow:0 0 0 10px rgba(201,242,77,0);}100%{box-shadow:0 0 0 0 rgba(201,242,77,0);}}
+.hero .display{margin:6px 0 20px;}
+.hero .role{font-size:clamp(1rem,0.9rem + 1vw,1.375rem);color:var(--ink-2);margin-bottom:18px;font-weight:500;}
+.hero .intro{max-width:56ch;color:var(--ink-2);margin-bottom:32px;}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:44px;}
+/* 巨型数据看板 */
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+.fact{background:var(--bg-2);padding:22px 18px;}
+.fact .n{font-size:clamp(2.25rem,1.4rem + 4.5vw,3.75rem);line-height:.95;font-weight:700;color:var(--accent);letter-spacing:-.03em;}
+.fact .l{margin-top:10px;font-size:.8125rem;color:var(--ink-3);}
+@media(min-width:768px){
+  .hero{padding-block:96px 56px;}
+  .facts{grid-template-columns:repeat(4,1fr);}
+  .fact{padding:30px 24px;}
+}
+
+/* ---------- 跑马灯 ---------- */
+.marquee{overflow:hidden;background:var(--accent);color:var(--accent-ink);border-block:1px solid var(--accent);}
+.marquee-track{display:flex;gap:44px;white-space:nowrap;padding:16px 0;font-weight:700;font-size:clamp(.95rem,0.8rem + 1vw,1.35rem);letter-spacing:.02em;animation:scroll 26s linear infinite;will-change:transform;}
+.marquee-track span{display:inline-flex;align-items:center;gap:44px;}
+.marquee-track span::after{content:"◆";font-size:.6em;opacity:.75;}
+@keyframes scroll{to{transform:translateX(-50%);}}
+.marquee:hover .marquee-track{animation-play-state:paused;}
+
+/* ---------- 时间轴 ---------- */
+.timeline{position:relative;padding-left:26px;}
+.timeline::before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:linear-gradient(var(--accent),var(--line));}
+.tl-item{position:relative;padding-bottom:44px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-item::before{content:"";position:absolute;left:-26px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px var(--accent-soft);}
+.tl-time{display:flex;flex-direction:column;align-items:flex-start;gap:4px;font-size:.8125rem;}
+.tl-time .tl-co{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:.8125rem;letter-spacing:.01em;padding:2px 9px;border-radius:6px;line-height:1.5;white-space:nowrap;}
+.tl-time .tl-date{color:var(--accent);font-weight:600;letter-spacing:.04em;font-family:var(--font-latin);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.tl-card{margin-top:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;transition:transform .25s var(--ease),border-color .25s;}
+.tl-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));}
+.tl-card .co{color:var(--ink-2);font-size:.875rem;margin-bottom:2px;}
+.tl-role{font-weight:600;font-size:1.0625rem;}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0;}
+.tag{font-size:.75rem;padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);}
+.tl-list li{position:relative;padding-left:18px;color:var(--ink-2);font-size:.9375rem;}
+.tl-list li::before{content:"";position:absolute;left:0;top:.72em;width:8px;height:2px;background:var(--accent);}
+.tl-honor{margin-top:14px;font-size:.8125rem;color:var(--ink-3);border-top:1px dashed var(--line);padding-top:14px;}
+/* 结构化荣誉奖项 */
+.honors{margin-top:16px;border-top:1px dashed var(--line);padding-top:15px;}
+.honors-label{display:inline-flex;align-items:center;gap:7px;font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:11px;}
+.honor-list{display:grid;gap:9px;}
+.honor{display:flex;gap:11px;align-items:flex-start;}
+.honor .yr{flex:0 0 auto;font-family:var(--font-latin);font-variant-numeric:tabular-nums;font-size:.72rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);border-radius:6px;padding:2px 8px;line-height:1.5;}
+.honor .txt{font-size:.8125rem;color:var(--ink-2);line-height:1.55;}
+.honor .txt b{color:var(--ink);font-weight:600;}
+@media(min-width:768px){
+  .timeline{padding-left:190px;}
+  .timeline::before{left:164px;}
+  .tl-item::before{left:-31px;}
+  .tl-time{position:absolute;left:-190px;top:8px;width:150px;align-items:flex-end;text-align:right;}
+}
+
+/* ---------- 网格 / 技能 / 教育 ---------- */
+.grid-2{display:grid;grid-template-columns:1fr;gap:36px;}
+.skill-group + .skill-group{margin-top:26px;}
+.skill-group h3{margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.skill-group h3 span{font-size:.75rem;font-weight:400;color:var(--ink-3);}
+.tag-row{display:flex;flex-wrap:wrap;gap:9px;}
+.tag-row .tag{font-size:.875rem;padding:7px 14px;background:var(--bg-2);}
+.tag-row .tag.hot{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.tag .yr{color:var(--accent);font-weight:700;font-family:var(--font-latin);font-variant-numeric:tabular-nums;margin-right:9px;}
+.card .tag-row .tag,.tl-card .honors .tag-row .tag{background:var(--bg);}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-md);padding:26px;}
+.cert-list{display:grid;gap:13px;margin-top:18px;}
+.cert-list li{display:flex;gap:12px;align-items:flex-start;font-size:.9375rem;color:var(--ink-2);}
+.cert-list li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:.58em;flex:0 0 auto;}
+@media(min-width:768px){ .grid-2{grid-template-columns:1fr 1fr;gap:56px;} }
+
+/* ---------- 大 CTA Footer ---------- */
+.cta{padding-block:96px;border-top:1px solid var(--line);text-align:center;position:relative;overflow:hidden;}
+.cta::before{content:"";position:absolute;left:50%;bottom:-60%;transform:translateX(-50%);width:120vw;height:120vw;max-width:1000px;max-height:1000px;border-radius:50%;background:radial-gradient(circle,var(--accent-soft) 0%,transparent 60%);}
+.cta .container{position:relative;z-index:1;}
+.cta h2{font-size:clamp(2.5rem,1.4rem + 8vw,6rem);letter-spacing:-.04em;line-height:1.14;margin-bottom:28px;}
+.cta h2 em{font-style:normal;color:var(--accent);}
+.cta .contact{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:32px;}
+.footer-bottom{border-top:1px solid var(--line);padding:24px 0;}
+.footer-bottom .container{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:.8125rem;color:var(--ink-3);}
+
+/* ---------- 揭示动画 & 可访问性 ---------- */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s var(--ease),transform .6s var(--ease);}
+.reveal.in{opacity:1;transform:none;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  .reveal{opacity:1;transform:none;}
+}
+
+.reveal{opacity:1!important;transform:none!important;}
+</style>
+</head>
+<body>
+
+<!-- ============ Header ============ -->
+<header class="header">
+  <div class="container">
+    <a class="brand" href="#top">沈文轩<span class="dot"></span></a>
+    <nav class="nav">
+      <a href="#about">关于</a><a href="#experience">经历</a>
+      <a href="#skills">技能</a><a href="#education">教育</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-primary" href="#contact">发送 Offer →</a>
+      <button class="icon-btn burger" id="burger" aria-label="打开菜单">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#about">关于</a><a href="#experience">经历</a>
+    <a href="#skills">技能</a><a href="#education">教育</a><a href="#contact">发送 Offer</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <div class="container">
+      <span class="badge reveal"><span class="pulse"></span>求职中 · 数据 / 自动化 / 运营</span>
+      <p class="eyebrow reveal">Data&nbsp;·&nbsp;Automation&nbsp;·&nbsp;Logistics</p>
+      <h1 class="display reveal">沈文轩<span class="hl">.</span></h1>
+      <p class="role reveal">数据支持 · 流程自动化 · 物流运营</p>
+      <p class="intro reveal">
+        逻辑性强、善于思考。3 年跨行业经验，专做一件事：
+        把传统办公变成<span style="color:var(--accent)">标准化、智能化</span>的流程——
+        用 RPA、BI 看板与 AI 智能体，让数据替人做重复的事。
+      </p>
+      <div class="hero-cta reveal">
+        <a class="btn btn-primary" href="mailto:sjx_st@outlook.com">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          发送Offer
+        </a>
+        <a class="btn btn-ghost" href="#experience">
+          查看战绩
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+        </a>
+      </div>
+      <div class="facts reveal">
+        <div class="fact"><div class="n">50%</div><div class="l">工作量降低</div></div>
+        <div class="fact"><div class="n">60%</div><div class="l">工作效率提升</div></div>
+        <div class="fact"><div class="n">325×</div><div class="l">单场景综合提效</div></div>
+        <div class="fact"><div class="n">3</div><div class="l">行业实战经验</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 跑马灯 ============ -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>多维表格体系</span><span>流程标准化</span><span>RPA 浏览器自动化</span><span>BI 数据可视化</span>
+      <span>AI 智能体工作流</span><span>开放平台 API 对接</span><span>物流调度</span><span>财务结算对账</span>
+      <span>多维表格体系</span><span>流程标准化</span><span>RPA 浏览器自动化</span><span>BI 数据可视化</span>
+      <span>AI 智能体工作流</span><span>开放平台 API 对接</span><span>物流调度</span><span>财务结算对账</span>
+    </div>
+  </div>
+
+  <!-- ============ 关于 ============ -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="section-head reveal"><span class="idx">01</span><h2>关于</h2></div>
+      <div class="grid-2">
+        <p class="muted reveal">
+          从轨道交通工程机械起步，走过设备租赁调度、酒旅 BD、物流数据支持三段跨行业实践。
+          我擅长在混乱的流程里抽象出可复用的标准与工具——
+          <b style="color:var(--ink)">不靠加班解决问题，靠系统解决问题。</b>
+        </p>
+        <div class="tag-row reveal">
+          <span class="tag hot">逻辑性强</span><span class="tag">善于思考</span>
+          <span class="tag">全流程优化</span><span class="tag">跨部门协同</span>
+          <span class="tag hot">数据驱动</span><span class="tag">INTP</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 工作经历 ============ -->
+  <section class="section" id="experience">
+    <div class="container">
+      <div class="section-head reveal"><span class="idx">02</span><h2>工作经历</h2></div>
+      <div class="timeline">
+
+        <div class="tl-item reveal">
+          <div class="tl-time"><span class="tl-co">融辉物流</span><span class="tl-date">2025.04 — 至今</span></div>
+          <div class="tl-card">
+            <div class="co">浙江融辉物流有限公司（浙江润辉供应链管理有限公司）</div>
+            <div class="tl-role">数据支持岗 · 物流</div>
+            <div class="tags">
+              <span class="tag">物流调度</span><span class="tag">财务对账</span>
+              <span class="tag">数据报表</span><span class="tag">自动化</span>
+            </div>
+            <ul class="tl-list">
+              <li>搭建多维表格协作体系，工作量降低 50%、效率提升 60%。</li>
+              <li>开发 RPA 自动化脚本替代重复操作，单场景提效 <b style="color:var(--accent)">325 倍</b>。</li>
+              <li>搭建 BI 数据看板，自动推送通知支撑管理决策。</li>
+              <li>搭建 AI 智能体，基于历史成交数据自动生成报价方案。</li>
+              <li>对接运满满开放平台，独立开发物流询价网站。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-item reveal">
+          <div class="tl-time"><span class="tl-co">美团酒店</span><span class="tl-date">2024.03 — 2024.11</span></div>
+          <div class="tl-card">
+            <div class="co">杭州汉骑信息技术有限公司（美团旗下摩拜子公司）</div>
+            <div class="tl-role">BD · 酒旅住宿</div>
+            <div class="tags">
+              <span class="tag">酒店签约</span><span class="tag">成本定价</span>
+              <span class="tag">OTA运营</span><span class="tag">ToB销售</span>
+            </div>
+            <ul class="tl-list">
+              <li>拓展区域酒店签约，提升市场占有率。</li>
+              <li>输出门店运营指导，带动平台营收增长。</li>
+            </ul>
+            <div class="honors">
+              <div class="honors-label"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>荣誉奖项</div>
+              <div class="tag-row">
+                <span class="tag"><b class="yr">2024.07</b>美团 IdeaBox「阳光建议奖」 · 北京研发园荣誉墙</span>
+                <span class="tag"><b class="yr">2024.08</b>新签二分区冲星战队激励赛 TOP2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tl-item reveal">
+          <div class="tl-time"><span class="tl-co">宏信建发</span><span class="tl-date">2021.07 — 2024.02</span></div>
+          <div class="tl-card">
+            <div class="co">上海宏信设备工程有限公司（上海宏信建筑科技徐州分公司）</div>
+            <div class="tl-role">调度执行主管（区域总调度）· 设备租赁</div>
+            <div class="tags">
+              <span class="tag">高空作业车</span><span class="tag">调度执行</span>
+              <span class="tag">物流运输</span><span class="tag">车队管理</span>
+              <span class="tag">资产管理</span><span class="tag">结算对账</span>
+            </div>
+            <ul class="tl-list">
+              <li>负责区域设备调度，持续提升设备出动率。</li>
+              <li>提报新车采购计划，优化门店配置与老旧设备集货。</li>
+              <li>负责资产管理、设备盘点、印章台账与文件归档。</li>
+              <li>跟进订单全流程闭环，把控设备出入库与进退场交接。</li>
+              <li>管理物流车队，优化路线与配载，降本提效。</li>
+            </ul>
+            <div class="honors">
+              <div class="honors-label"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>荣誉奖项</div>
+              <div class="tag-row">
+                <span class="tag"><b class="yr">2022.01</b>「责任 · 成长」小宏人品质卡</span>
+                <span class="tag"><b class="yr">2022.09</b>「创新」小宏人品质卡</span>
+                <span class="tag"><b class="yr">2023.08</b>「言传身教 · 诲人不倦」证书</span>
+                <span class="tag"><b class="yr">绩效</b>2021 年度 B+ ｜ 2022 年度 A</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 技能 ============ -->
+  <section class="section" id="skills">
+    <div class="container">
+      <div class="section-head reveal"><span class="idx">03</span><h2>技能</h2></div>
+      <div class="grid-2">
+        <div class="reveal">
+          <div class="skill-group">
+            <h3>精通 <span>Proficient</span></h3>
+            <div class="tag-row"><span class="tag hot">Excel</span><span class="tag hot">多维表格</span></div>
+          </div>
+          <div class="skill-group">
+            <h3>熟练 <span>Advanced</span></h3>
+            <div class="tag-row"><span class="tag hot">网页自动化</span><span class="tag hot">AI 智能体</span><span class="tag hot">工作流</span></div>
+          </div>
+          <div class="skill-group">
+            <h3>熟悉 <span>Familiar</span></h3>
+            <div class="tag-row">
+              <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span>
+              <span class="tag">Python</span><span class="tag">RPA</span><span class="tag">CAD</span><span class="tag">Vibe Coding</span>
+            </div>
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="facts" style="grid-template-columns:repeat(2,1fr);">
+            <div class="fact"><div class="n" style="font-size:2rem;">RPA</div><div class="l">浏览器自动化提效</div></div>
+            <div class="fact"><div class="n" style="font-size:2rem;">BI</div><div class="l">可视化数据看板</div></div>
+            <div class="fact"><div class="n" style="font-size:2rem;">API</div><div class="l">平台对接开发</div></div>
+            <div class="fact"><div class="n" style="font-size:2rem;">AI</div><div class="l">智能体工作流</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 教育 & 证书 ============ -->
+  <section class="section" id="education">
+    <div class="container">
+      <div class="section-head reveal"><span class="idx">04</span><h2>教育 &amp; 证书</h2></div>
+      <div class="grid-2">
+        <div class="card reveal">
+          <span class="caption">2018.09 — 2021.06</span>
+          <h3 style="margin:6px 0;">南京交通职业技术学院</h3>
+          <p class="muted small">轨道交通学院 · 工程机械运用技术 · 大专（全日制）</p>
+          <p class="muted small" style="margin-top:14px;">主修课程</p>
+          <div class="tag-row" style="margin-top:10px;">
+            <span class="tag">发动机构造与维修</span>
+            <span class="tag">底盘构造与维修</span>
+            <span class="tag">液压与液力传动</span>
+            <span class="tag">电气设备构造与维修</span>
+            <span class="tag">状态检测与故障诊断</span>
+          </div>
+          <div class="honors">
+            <div class="honors-label"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>荣誉奖项</div>
+            <div class="tag-row">
+              <span class="tag"><b class="yr">2019</b>学习优秀奖学金 三等奖</span>
+              <span class="tag"><b class="yr">2020</b>综合素质拓展奖学金</span>
+              <span class="tag"><b class="yr">2020</b>宏信订单班奖学金 第 2 名</span>
+            </div>
+          </div>
+        </div>
+        <div class="card reveal">
+          <span class="caption">专业证书</span>
+          <h3 style="margin:6px 0;">技能证书</h3>
+          <div class="tag-row" style="margin-top:18px;">
+            <span class="tag">ATA 职业技能评价证书（中级）</span>
+            <span class="tag">高等学校英语应用证书（三级）</span>
+            <span class="tag">AutoCAD 职业技术培训证书（中级）</span>
+            <span class="tag">起重装卸机械操作工职业资格证书（四级）</span>
+            <span class="tag">机动车驾驶证（C1）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 大 CTA ============ -->
+  <section class="cta" id="contact">
+    <div class="container">
+      <h2 class="reveal">聊一聊，<br />让流程<em>替你省力</em>。</h2>
+      <div class="contact reveal">
+        <a class="btn btn-primary" href="mailto:sjx_st@outlook.com">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          sjx_st@outlook.com
+        </a>
+        <a class="btn btn-ghost num" href="tel:18626010106">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          186 2601 0106
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer-bottom">
+  <div class="container">
+    <span>沈文轩 · 数据支持 / 流程自动化</span>
+    <span class="num">© 2026 · 江苏徐州</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var burger=document.getElementById('burger');
+  var menu=document.getElementById('mobileMenu');
+  burger.addEventListener('click',function(){menu.classList.toggle('open');});
+  menu.addEventListener('click',function(e){if(e.target.tagName==='A')menu.classList.remove('open');});
+})();
+(function(){
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){ if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+</body>
+</html>
